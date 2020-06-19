@@ -26,9 +26,7 @@
         <div id="user-profile"></div>
         <div id="oauth"></div>
         <button class="btn btn-default" id="obtain-new-token">Obtain new token using the refresh token</button>
-        <div id="show-songs-in-playlist-section">
-          <button class="btn btn-default" id="show-songs-in-playlist-button">Show songs in playlist</button>
-          <div id="songs-in-playlist"></div>
+        <button class="btn btn-default" id="delete-songs-not-in-library-from-all-playlists">Delete songs not in library from all playlists</button>
         </div>
       </div>
     </div>
@@ -137,8 +135,10 @@
             });
           }, false);
 
-          document.getElementById('show-songs-in-playlist-button').addEventListener('click', function() {
-            console.log("display songs in playlist");
+          document.getElementById('delete-songs-not-in-library-from-all-playlists').addEventListener('click', function() {
+            $.get("/delete_songs_not_in_library_from_all_playlists", function(data, status) {
+              alert("Data: " + data + "\nStatus: " + status);
+            });
           }, false);
         }
       })();

@@ -143,5 +143,9 @@ app.get('/refresh_token', function(req, res) {
   });
 });
 
+app.get('/delete_songs_not_in_library_from_all_playlists', function(req, res) {
+  res.send("deleted!");
+});
+
 console.log('Listening on 8888');
 app.listen(8888);
