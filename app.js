@@ -12,7 +12,7 @@ var request = require('request'); // "Request" library
 var cors = require('cors');
 var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
+const axios = require("axios");
 
 var client_id = 'cd891f5f3f9841309bc7513006129e4d'; // Your client id
 var client_secret = '1b3b1e08708047bfac43d895d8f1b8ce'; // Your secret
@@ -101,7 +101,7 @@ app.get('/callback', function(req, res) {
 
         // use the access token to access the Spotify Web API
         request.get(options, function(error, response, body) {
-          console.log(body);
+          //console.log(body);
         });
 
         // we can also pass the token to the browser to make requests from there
@@ -144,13 +144,23 @@ app.get('/refresh_token', function(req, res) {
   });
 });
 
-app.get('/delete_songs_not_in_library_from_all_playlists', function(req, res) {
-  var access_token = req.query.access_token;
+app.get('/delete_songs_not_in_library_from_all_playlists', async function(req, res) {
+  try{
+    var access_token = req.query.access_token;
   
-  console.log("the access token is", access_token);
+    // get the user id
+    let config = {headers: { 'Authorization': 'Bearer ' + access_token }};
+    let axiosResponse = await axios.get('https://api.spotify.com/v1/me', config);
+    let user_id = axiosResponse.data.id;
+    console.log("\n\nThe user's id is: ", user_id);
+  
+    // get a list of the user's playlists
 
-
-  res.send("deleted!");
+    res.send("done!");
+  }
+  catch(err){
+    console.log(err);
+  }
 });
 
 console.log('Listening on 8888');

@@ -136,14 +136,13 @@
           }, false);
 
           document.getElementById('delete-songs-not-in-library-from-all-playlists').addEventListener('click', function() {
-            console.log(access_token);
             $.ajax({
               url: '/delete_songs_not_in_library_from_all_playlists',
               data: {
                 'access_token': access_token
               }
             }).done(function(data) {
-              console.log(data);
+              alert(data);
             });
           }, false);
         }
