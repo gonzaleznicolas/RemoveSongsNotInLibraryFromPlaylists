@@ -47,7 +47,7 @@ app.get('/login', function(req, res) {
   res.cookie(stateKey, state);
 
   // your application requests authorization
-  var scope = 'user-read-private user-read-email user-library-read playlist-modify-private playlist-modify-public';
+  var scope = 'user-read-private user-read-email user-library-read playlist-modify-private playlist-modify-public playlist-read-private';
   res.redirect('https://accounts.spotify.com/authorize?' +
     querystring.stringify({
       response_type: 'code',
@@ -155,6 +155,10 @@ app.get('/delete_songs_not_in_library_from_all_playlists', async function(req, r
     console.log("\n\nThe user's id is: ", user_id);
   
     // get a list of the user's playlists
+    config = {headers: { 'Authorization': 'Bearer ' + access_token }, params: {limit: 50}};
+    axiosResponse = await axios.get(`https://api.spotify.com/v1/users/${user_id}/playlists`, config);
+    let playlists = axiosResponse.data.items;
+    console.log("\n\nThe playlists object: ", playlists);
 
     res.send("done!");
   }
