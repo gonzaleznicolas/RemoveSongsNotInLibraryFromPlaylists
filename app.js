@@ -46,7 +46,7 @@ app.get('/login', function(req, res) {
   res.cookie(stateKey, state);
 
   // your application requests authorization
-  var scope = 'user-read-private user-read-email';
+  var scope = 'user-read-private user-read-email user-library-read playlist-modify-private playlist-modify-public';
   res.redirect('https://accounts.spotify.com/authorize?' +
     querystring.stringify({
       response_type: 'code',
@@ -144,6 +144,9 @@ app.get('/refresh_token', function(req, res) {
 });
 
 app.get('/delete_songs_not_in_library_from_all_playlists', function(req, res) {
+
+
+
   res.send("deleted!");
 });
 
