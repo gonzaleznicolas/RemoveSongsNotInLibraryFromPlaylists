@@ -158,7 +158,23 @@ app.get('/delete_songs_not_in_library_from_all_playlists', async function(req, r
     config = {headers: { 'Authorization': 'Bearer ' + access_token }, params: {limit: 50}};
     axiosResponse = await axios.get(`https://api.spotify.com/v1/users/${user_id}/playlists`, config);
     let playlists = axiosResponse.data.items;
-    console.log("\n\nThe playlists object: ", playlists);
+    let playlistsByUser = playlists.filter( pl => pl.owner.id == user_id);
+    console.log("\n\nThe playlists object: ", playlistsByUser);
+
+
+    // for testing: pick one playlist
+    let plMetadata = playlistsByUser.find( pl => pl.name == "Inspire");
+    console.log("\n\n Playlist object:");
+    console.log(plMetadata);
+
+    config = {
+      headers: { 'Authorization': 'Bearer ' + access_token },
+      params: {limit: 2, fields:"name, id, tracks.items.track.name, tracks.items.track.id"}};
+    axiosResponse = await axios.get(`https://api.spotify.com/v1/playlists/${plMetadata.id}`, config);
+    let plObj = axiosResponse.data.tracks.items;
+    let plListOfTracks = plObj.map( item => {return {id: item.track.id, name: item.track.name};});
+    console.log(`\n\nThe list of tracks in playlist ${plMetadata.name} (${plMetadata.id}): `);
+    console.log(plListOfTracks);
 
     res.send("done!");
   }
