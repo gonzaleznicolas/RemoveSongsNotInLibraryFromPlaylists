@@ -12,6 +12,7 @@ var request = require('request'); // "Request" library
 var cors = require('cors');
 var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
+var bodyParser = require('body-parser');
 
 var client_id = 'cd891f5f3f9841309bc7513006129e4d'; // Your client id
 var client_secret = '1b3b1e08708047bfac43d895d8f1b8ce'; // Your secret
@@ -144,7 +145,9 @@ app.get('/refresh_token', function(req, res) {
 });
 
 app.get('/delete_songs_not_in_library_from_all_playlists', function(req, res) {
-
+  var access_token = req.query.access_token;
+  
+  console.log("the access token is", access_token);
 
 
   res.send("deleted!");

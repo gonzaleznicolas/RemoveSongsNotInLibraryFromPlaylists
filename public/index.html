@@ -19,7 +19,7 @@
   <body>
     <div class="container">
       <div id="login">
-        <h1>This is an example of the Authorization Code flow</h1>
+        <h1>Welcome to RemoveSongsNotInLibraryFromPlaylists</h1>
         <a href="/login" class="btn btn-primary">Log in with Spotify</a>
       </div>
       <div id="loggedin">
@@ -136,8 +136,14 @@
           }, false);
 
           document.getElementById('delete-songs-not-in-library-from-all-playlists').addEventListener('click', function() {
-            $.get("/delete_songs_not_in_library_from_all_playlists", function(data, status) {
-              alert("Data: " + data + "\nStatus: " + status);
+            console.log(access_token);
+            $.ajax({
+              url: '/delete_songs_not_in_library_from_all_playlists',
+              data: {
+                'access_token': access_token
+              }
+            }).done(function(data) {
+              console.log(data);
             });
           }, false);
         }
