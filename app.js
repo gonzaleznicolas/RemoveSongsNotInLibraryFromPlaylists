@@ -152,7 +152,7 @@ app.get('/delete_songs_not_in_library_from_all_playlists', async function(req, r
   
     let playlistsByUser = await getListOfPlaylistsByUser(access_token, user_id);
 
-    // playlistsByUser = playlistsByUser.filter( plMetadata => plMetadata.name == "Rap");
+    playlistsByUser = playlistsByUser.filter( plMetadata => plMetadata.name == "Inspire");
 
     for(let i = 0; i < playlistsByUser.length; i++) {
       let plMetadata = playlistsByUser[i];
@@ -199,7 +199,7 @@ async function compileListOfAllSongsInPlaylistWithSavedBoolean(access_token, plM
 
         let config = {
           headers: { 'Authorization': 'Bearer ' + access_token },
-          params: {fields:"next, items.track.name, items.track.id",
+          params: {fields:"next, items.track.name, items.track.id, items.track.uri",
                     offset: myOffset,
                     limit: 50}
         };
@@ -209,7 +209,7 @@ async function compileListOfAllSongsInPlaylistWithSavedBoolean(access_token, plM
         done = axiosResponse.data.next == null;
 
         let plPage = axiosResponse.data.items;
-        let plTrackPage = plPage.map( item => {return {id: item.track.id, name: item.track.name};});
+        let plTrackPage = plPage.map( item => {return {id: item.track.id, uri: item.track.uri, name: item.track.name};});
         await augmentTrackListWithWhetherSavedData(access_token, plTrackPage);
         plCompleteTrackList = plCompleteTrackList.concat(plTrackPage);
       }
