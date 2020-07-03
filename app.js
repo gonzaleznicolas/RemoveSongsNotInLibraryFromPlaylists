@@ -148,29 +148,47 @@ app.get('/delete_songs_not_in_library_from_all_playlists', async function(req, r
   try{
     var access_token = req.query.access_token;
   
-    // get the user id
+    let user_id = await getUserId(access_token);
+  
+    let playlistsByUser = await getListOfPlaylistsByUser(access_token, user_id);
+
+    for(let i = 0; i < playlistsByUser.length; i++) {
+      let plMetadata = playlistsByUser[i];
+      let listOfSongsInPlaylist = await compileListOfAllSongsInPlaylist( access_token, plMetadata);
+      if(listOfSongsInPlaylist.length < 50)
+        console.log(listOfSongsInPlaylist);
+
+    }
+
+    res.send("done!");
+  }
+  catch(err){
+    console.log(err);
+  }
+});
+
+console.log('Listening on 8888');
+app.listen(8888);
+
+async function getUserId(access_token){
     let config = {headers: { 'Authorization': 'Bearer ' + access_token }};
     let axiosResponse = await axios.get('https://api.spotify.com/v1/me', config);
     let user_id = axiosResponse.data.id;
     console.log("\n\nThe user's id is: ", user_id);
-  
-    // get a list of the user's playlists
-    config = {headers: { 'Authorization': 'Bearer ' + access_token }, params: {limit: 50}};
-    axiosResponse = await axios.get(`https://api.spotify.com/v1/users/${user_id}/playlists`, config);
-    let playlists = axiosResponse.data.items;
-    let playlistsByUser = playlists.filter( pl => pl.owner.id == user_id);
-    playlistsByUser = playlistsByUser.map( pl => {return {id:pl.id, name:pl.name};});
-    console.log("\n\nThe playlists object: ", playlistsByUser);
+    return user_id;
+}
 
+async function getListOfPlaylistsByUser(access_token, user_id){
+  let config = {headers: { 'Authorization': 'Bearer ' + access_token }, params: {limit: 50}};
+  let axiosResponse = await axios.get(`https://api.spotify.com/v1/users/${user_id}/playlists`, config);
+  let playlists = axiosResponse.data.items;
+  let playlistsByUser = playlists.filter( pl => pl.owner.id == user_id); // remove lists user follow's but aren't his/hers
+  playlistsByUser = playlistsByUser.map( pl => {return {id:pl.id, name:pl.name};});
+  //console.log("\n\nThe playlists object: ", playlistsByUser);
+  return playlistsByUser;
+}
 
-    ///////////// FOR EACH PLAYLIST /////////////////
-
-    for(let i = 0; i < playlistsByUser.length; i++) {
-      let plMetadata = playlistsByUser[i];
-      console.log("\n\n Playlist object:");
-      console.log(plMetadata);
-
-      // compile a list of all the songs in the playlist
+async function compileListOfAllSongsInPlaylist(access_token, plMetadata){
       let plCompleteTrackList = [];
       let done = false;
       let myOffset = 0;
@@ -195,18 +213,7 @@ app.get('/delete_songs_not_in_library_from_all_playlists', async function(req, r
 
       }
 
-      //console.log(`\n\nThe list of tracks in playlist ${plMetadata.name} (${plMetadata.id}): `);
-      //console.log(plCompleteTrackList);
-      console.log("Total number of tracks is: ", plCompleteTrackList.length);
-
-    }
-
-    res.send("done!");
-  }
-  catch(err){
-    console.log(err);
-  }
-});
-
-console.log('Listening on 8888');
-app.listen(8888);
+      console.log(`Total number of tracks in playlist ${plMetadata.name} (${plMetadata.id}) is: `,
+                  plCompleteTrackList.length);
+      return plCompleteTrackList;
+}
