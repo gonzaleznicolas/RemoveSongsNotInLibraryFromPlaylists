@@ -159,6 +159,7 @@ app.get('/delete_songs_not_in_library_from_all_playlists', async function(req, r
     axiosResponse = await axios.get(`https://api.spotify.com/v1/users/${user_id}/playlists`, config);
     let playlists = axiosResponse.data.items;
     let playlistsByUser = playlists.filter( pl => pl.owner.id == user_id);
+    playlistsByUser = playlistsByUser.map( pl => {return {id:pl.id, name:pl.name};});
     console.log("\n\nThe playlists object: ", playlistsByUser);
 
 
