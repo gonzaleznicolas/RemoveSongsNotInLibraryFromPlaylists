@@ -165,42 +165,41 @@ app.get('/delete_songs_not_in_library_from_all_playlists', async function(req, r
 
     ///////////// FOR EACH PLAYLIST /////////////////
 
-    // for testing: pick one playlist
-    let plMetadata = playlistsByUser.find( pl => pl.name == "Other Espanol");
-    console.log("\n\n Playlist object:");
-    console.log(plMetadata);
+    for(let i = 0; i < playlistsByUser.length; i++) {
+      let plMetadata = playlistsByUser[i];
+      console.log("\n\n Playlist object:");
+      console.log(plMetadata);
 
-    // compile a list of all the songs in the playlist
-    let plCompleteTrackList = [];
-    let done = false;
-    let myOffset = 0;
+      // compile a list of all the songs in the playlist
+      let plCompleteTrackList = [];
+      let done = false;
+      let myOffset = 0;
 
-    while(!done)
-    {
+      while(!done)
+      {
 
-      config = {
-        headers: { 'Authorization': 'Bearer ' + access_token },
-        params: {fields:"next, items.track.name, items.track.id",
-                  offset: myOffset,
-                  limit: 100}
-      };
-      myOffset = myOffset + 100;
-      axiosResponse = await axios.get(`https://api.spotify.com/v1/playlists/${plMetadata.id}/tracks`, config);
+        config = {
+          headers: { 'Authorization': 'Bearer ' + access_token },
+          params: {fields:"next, items.track.name, items.track.id",
+                    offset: myOffset,
+                    limit: 100}
+        };
+        myOffset = myOffset + 100;
+        axiosResponse = await axios.get(`https://api.spotify.com/v1/playlists/${plMetadata.id}/tracks`, config);
 
-      done = axiosResponse.data.next == null;
+        done = axiosResponse.data.next == null;
 
-      let plPage = axiosResponse.data.items;
-      let plTrackPage = plPage.map( item => {return {id: item.track.id, name: item.track.name};});
-      plCompleteTrackList = plCompleteTrackList.concat(plTrackPage);
+        let plPage = axiosResponse.data.items;
+        let plTrackPage = plPage.map( item => {return {id: item.track.id, name: item.track.name};});
+        plCompleteTrackList = plCompleteTrackList.concat(plTrackPage);
+
+      }
+
+      //console.log(`\n\nThe list of tracks in playlist ${plMetadata.name} (${plMetadata.id}): `);
+      //console.log(plCompleteTrackList);
+      console.log("Total number of tracks is: ", plCompleteTrackList.length);
 
     }
-
-    console.log(`\n\nThe list of tracks in playlist ${plMetadata.name} (${plMetadata.id}): `);
-    console.log(plCompleteTrackList);
-    console.log("Total number of tracks is: ", plCompleteTrackList.length);
-
-
-    ///////////////////////////////////////////////
 
     res.send("done!");
   }
