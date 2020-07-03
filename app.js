@@ -152,11 +152,11 @@ app.get('/delete_songs_not_in_library_from_all_playlists', async function(req, r
   
     let playlistsByUser = await getListOfPlaylistsByUser(access_token, user_id);
 
+    playlistsByUser = playlistsByUser.filter( plMetadata => plMetadata.name == "Inspire");
+
     for(let i = 0; i < playlistsByUser.length; i++) {
       let plMetadata = playlistsByUser[i];
       let listOfSongsInPlaylist = await compileListOfAllSongsInPlaylist( access_token, plMetadata);
-      if(listOfSongsInPlaylist.length < 50)
-        console.log(listOfSongsInPlaylist);
 
     }
 
@@ -196,19 +196,20 @@ async function compileListOfAllSongsInPlaylist(access_token, plMetadata){
       while(!done)
       {
 
-        config = {
+        let config = {
           headers: { 'Authorization': 'Bearer ' + access_token },
           params: {fields:"next, items.track.name, items.track.id",
                     offset: myOffset,
-                    limit: 100}
+                    limit: 50}
         };
-        myOffset = myOffset + 100;
-        axiosResponse = await axios.get(`https://api.spotify.com/v1/playlists/${plMetadata.id}/tracks`, config);
+        myOffset = myOffset + 50;
+        let axiosResponse = await axios.get(`https://api.spotify.com/v1/playlists/${plMetadata.id}/tracks`, config);
 
         done = axiosResponse.data.next == null;
 
         let plPage = axiosResponse.data.items;
         let plTrackPage = plPage.map( item => {return {id: item.track.id, name: item.track.name};});
+        let plTrackPageWithSavedBoolean = await augmentTrackListWithWhetherSavedData(access_token, plTrackPage);
         plCompleteTrackList = plCompleteTrackList.concat(plTrackPage);
 
       }
@@ -216,4 +217,17 @@ async function compileListOfAllSongsInPlaylist(access_token, plMetadata){
       console.log(`Total number of tracks in playlist ${plMetadata.name} (${plMetadata.id}) is: `,
                   plCompleteTrackList.length);
       return plCompleteTrackList;
+}
+
+// trackList must be <= 50 songs
+async function augmentTrackListWithWhetherSavedData(access_token, trackList){
+  let justIds = trackList.map( obj => obj.id );
+  console.log(justIds);
+
+  let config = {
+    headers: { 'Authorization': 'Bearer ' + access_token },
+    params: {ids: justIds.join()}
+  };
+  let axiosResponse = await axios.get(`https://api.spotify.com/v1/me/tracks/contains`, config);
+  console.log(axiosResponse.data);
 }
