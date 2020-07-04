@@ -152,16 +152,23 @@ app.get('/delete_songs_not_in_library_from_all_playlists', async function(req, r
   
     let playlistsByUser = await getListOfPlaylistsByUser(access_token, user_id);
 
-    playlistsByUser = playlistsByUser.filter( plMetadata => plMetadata.name == "Inspire");
+    let summaryMessage = "";
 
     for(let i = 0; i < playlistsByUser.length; i++) {
       let plMetadata = playlistsByUser[i];
       let listOfSongsInPlaylist = await compileListOfAllSongsInPlaylistWithSavedBoolean( access_token, plMetadata);
       let songsInPlaylistButNotSaved = listOfSongsInPlaylist.filter(track => track.saved == false);
-      console.log(songsInPlaylistButNotSaved);
+
+      for (let p = 0; p < songsInPlaylistButNotSaved.length; p++){
+        let addition = `From Playlist ${plMetadata.name} removed song ${songsInPlaylistButNotSaved[p].name}\n`;
+        summaryMessage = summaryMessage + addition;
+      }
+
+      await removeSongsFromPlaylist(access_token, plMetadata.id, songsInPlaylistButNotSaved);
     }
 
-    res.send("done!");
+    console.log(summaryMessage);
+    res.send(summaryMessage);
   }
   catch(err){
     console.log(err);
@@ -171,11 +178,25 @@ app.get('/delete_songs_not_in_library_from_all_playlists', async function(req, r
 console.log('Listening on 8888');
 app.listen(8888);
 
+async function removeSongsFromPlaylist(access_token, plId, songsToRemove){
+
+  if (songsToRemove.length == 0)
+    return;
+
+  let listOfSongsInRequiredFormat = {tracks: songsToRemove.map( (track) => {return {uri: track.uri};})};
+
+  let config = {
+    headers: { 'Authorization': 'Bearer ' + access_token , 'Content-Type': 'application/json'},
+    data: JSON.stringify(listOfSongsInRequiredFormat)
+  };
+  await axios.delete(`https://api.spotify.com/v1/playlists/${plId}/tracks`, config);
+}
+
 async function getUserId(access_token){
     let config = {headers: { 'Authorization': 'Bearer ' + access_token }};
     let axiosResponse = await axios.get('https://api.spotify.com/v1/me', config);
     let user_id = axiosResponse.data.id;
-    console.log("\n\nThe user's id is: ", user_id);
+    //console.log("\n\nThe user's id is: ", user_id);
     return user_id;
 }
 
@@ -214,8 +235,10 @@ async function compileListOfAllSongsInPlaylistWithSavedBoolean(access_token, plM
         plCompleteTrackList = plCompleteTrackList.concat(plTrackPage);
       }
 
+      /*
       console.log(`Total number of tracks in playlist ${plMetadata.name} (${plMetadata.id}) is: `,
                   plCompleteTrackList.length);
+      */
       return plCompleteTrackList;
 }
 
